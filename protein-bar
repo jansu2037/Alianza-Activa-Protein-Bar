@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alianza Activa Protein Bar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#06b6d4',
+                        secondary: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #app, #app * {
+                visibility: visible;
+            }
+            .fixed {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-900 p-4 md:p-8 font-sans text-slate-100">
+
+    <div id="app" class="max-w-6xl mx-auto space-y-6"></div>
+
+    <script>
+        let isAuthenticated = false;
+        const APP_PASSWORD = 'gotic200rsc';
+        const STORAGE_KEY = 'alianza_activa_protein_bar_data_v201';
+
+        const defaultLogo = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&auto=format&fit=crop&q=80";
+
+        function loadSavedData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Error loading local storage", e);
+            }
+            return null;
+        }
+
+        const defaultData = {
+            inventory: [
+                { id: 1, name: 'Batido Nutricional Cookies and Cream 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, vitaminas y minerales.' },
+                { id: 'f_ddl', name: 'Batido Nutricional Dulce de Leche Cremoso SIN TACC 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, sabor dulce de leche.' },
+                { id: 'f_van', name: 'Batido Nutricional Vainilla SIN TACC 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, sabor vainilla.' },
+                { id: 'f_cho', name: 'Batido Nutricional Chocolate SIN TACC 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, cacao, fructosa, fibra de avena, inulina.' },
+                { id: 'f_fru', name: 'Batido Nutricional Frutilla SIN TACC 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, sabor frutilla.' },
+                { id: 'f_ban', name: 'Batido Nutricional Banana Caramelo 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, sabor banana caramelo.' },
+                { id: 'f_dur', name: 'Batido Nutricional Durazno SIN TACC 550g', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 88, protein: 10, carbs: 9.3, fat: 1.2, fiber: 3.3, labelDetails: 'Proteína aislada de soja, fructosa, fibra de avena, inulina, sabor durazno.' },
+                { id: 'f_soup', name: 'Nutri Soup Pollo con vegetales', stock: 22, containerSize: 22, price: 42508.69, sellPrice: 79993, weight: 22, kcal: 90, protein: 9, carbs: 10, fat: 2, fiber: 2, labelDetails: 'Sopa nutricional con proteína y vegetales.' },
+                { id: 2, name: 'Proteína Personalizada en Polvo 240g (PPP)', stock: 30, containerSize: 30, price: 35077.08, sellPrice: 131800, weight: 30, kcal: 22, protein: 5.5, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Proteína aislada de soja y concentrado de suero de leche.' },
+                { id: 'pdm', name: 'Protein Drink Mix Vainilla 616g', stock: 30, containerSize: 30, price: 73039.54, sellPrice: 133125, weight: 30, kcal: 22, protein: 5.5, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Mezcla de proteínas en polvo.' },
+                { id: 3, name: 'Collagen Beauty Drink Frutilla y Limón 171g', stock: 30, containerSize: 30, price: 55944.33, sellPrice: 103214, weight: 30, kcal: 20, protein: 2.5, carbs: 2.5, fat: 0, fiber: 0, labelDetails: 'Péptidos de colágeno Verisol, vitaminas A, C, E, biotina, zinc, yodo, cobre, selenio.' },
+                { id: 4, name: 'Herbal Tea Concentrate Limón 51g', stock: 30, containerSize: 30, price: 32238.18, sellPrice: 60666, weight: 30, kcal: 5, protein: 0, carbs: 1.3, fat: 0, fiber: 0, labelDetails: 'Extracto de té verde, té negro, cardamomo, hibisco y malva.' },
+                { id: 't_chai', name: 'Herbal Tea Concentrate Chai 51g', stock: 30, containerSize: 30, price: 32238.18, sellPrice: 60666, weight: 30, kcal: 5, protein: 0, carbs: 1.3, fat: 0, fiber: 0, labelDetails: 'Extracto de té verde, té negro, cardamomo, hibisco y malva.' },
+                { id: 9, name: 'Herbal Tea Concentrate Original 102g', stock: 60, containerSize: 60, price: 56392.98, sellPrice: 106121, weight: 60, kcal: 5, protein: 0, carbs: 1.3, fat: 0, fiber: 0, labelDetails: 'Extracto de té verde y té negro, cardamomo, hibisco y malva.' },
+                { id: 5, name: 'Fibra Activa Manzana 210g', stock: 30, containerSize: 30, price: 42603.76, sellPrice: 80172, weight: 30, kcal: 5, protein: 0, carbs: 1.3, fat: 0, fiber: 5, labelDetails: 'Fibra de caña de azúcar, dextrina de maíz, fibra cítrica, fibra de soya, inulina.' },
+                { id: 'f_guay', name: 'Fibra Activa Guayaba 210g', stock: 30, containerSize: 30, price: 42603.76, sellPrice: 80172, weight: 30, kcal: 5, protein: 0, carbs: 1.3, fat: 0, fiber: 5, labelDetails: 'Fibra de caña de azúcar, dextrina de maíz, fibra cítrica, inulina.' },
+                { id: 6, name: 'Herbal Aloe Concentrado Original 473ml', stock: 31, containerSize: 31, price: 43079.28, sellPrice: 81067, weight: 31, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Concentrado de Aloe vera purificado y niacina.' },
+                { id: 'aloe_uva', name: 'Herbal Aloe Concentrado Uva 473ml', stock: 31, containerSize: 31, price: 43079.28, sellPrice: 81067, weight: 31, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Concentrado de Aloe vera purificado sabor uva y niacina.' },
+                { id: 'aloe_mango', name: 'Herbal Aloe Concentrado Mango 473ml', stock: 31, containerSize: 31, price: 43079.28, sellPrice: 81067, weight: 31, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Concentrado de Aloe vera purificado sabor mango y niacina.' },
+                { id: 7, name: 'Herbalifeline 60 cápsulas blandas (Omega 3)', stock: 30, containerSize: 30, price: 48214.48, sellPrice: 90731, weight: 30, kcal: 10, protein: 0, carbs: 0, fat: 1, fiber: 0, labelDetails: 'Aceite de pescado rico en EPA y DHA.' },
+                { id: 8, name: 'Beverage Mix Mezcla de frutas 280g', stock: 14, containerSize: 14, price: 47792.36, sellPrice: 83276, weight: 14, kcal: 71, protein: 15, carbs: 3.3, fat: 0, fiber: 0, labelDetails: 'Gelatina hidrolizada y aislado de suero de leche sabor frutas.' },
+                { id: 10, name: 'Liftoff - Granada y Frutilla (30 Sticks)', stock: 30, containerSize: 30, price: 84862.67, sellPrice: 159695, weight: 30, kcal: 10, protein: 0, carbs: 1, fat: 0, fiber: 0, labelDetails: 'Bebida efervescente energética con cafeína y vitaminas.' },
+                { id: 11, name: 'Complejo Multivitamínico 90 tabletas', stock: 30, containerSize: 30, price: 20113.21, sellPrice: 37848, weight: 30, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Vitaminas y minerales esenciales.' },
+                { id: 13, name: 'Golden Beverage', stock: 30, containerSize: 30, price: 36228.99, sellPrice: 68176, weight: 30, kcal: 10, protein: 2, carbs: 1, fat: 0, fiber: 0, labelDetails: 'Bebida funcional nutritiva.' },
+                { id: 14, name: 'Crocante de Proteína Chocolate 150g', stock: 30, containerSize: 30, price: 17515.86, sellPrice: 31621, weight: 30, kcal: 50, protein: 7, carbs: 4, fat: 1, fiber: 1, labelDetails: 'Snack proteico crocante.' },
+                { id: 15, name: 'Nutri Muffin (Edición Limitada)', stock: 30, containerSize: 30, price: 33814.64, sellPrice: 63630, weight: 30, kcal: 120, protein: 10, carbs: 15, fat: 3, fiber: 2, labelDetails: 'Preparación para nutri muffin saludable.' },
+                { id: 16, name: 'NRG en Polvo 60g', stock: 30, containerSize: 30, price: 26152.03, sellPrice: 49213, weight: 30, kcal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0, labelDetails: 'Extracto de guaraná y té pekoe.' },
+                { id: 17, name: 'Barra de Proteína Deluxe Vainilla y Almendra', stock: 14, containerSize: 14, price: 37988.88, sellPrice: 59071, weight: 14, kcal: 140, protein: 10, carbs: 15, fat: 4, fiber: 2, labelDetails: 'Barra nutritiva proteica.' },
+                { id: 18, name: 'Beta Glucanor', stock: 30, containerSize: 30, price: 60864.66, sellPrice: 114536, weight: 30, kcal: 15, protein: 1, carbs: 3, fat: 0, fiber: 3, labelDetails: 'Beta-glucanos de avena.' },
+                { id: 20, name: 'Xtra-Cal Advanced 90 tabletas', stock: 30, containerSize: 30, price: 17307.76, sellPrice: 32570, weight: 30, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Calcio, vitamina D y magnesio.' },
+                { id: 21, name: 'H24 Rebuild Strength Chocolate', stock: 20, containerSize: 20, price: 110880.17, sellPrice: 204832, weight: 20, kcal: 190, protein: 25, carbs: 18, fat: 3, fiber: 1, labelDetails: 'Recuperador muscular con proteína de suero y L-glutamina.' },
+                { id: 22, name: 'H24 Creatina Premium', stock: 30, containerSize: 30, price: 29920.06, sellPrice: 56304, weight: 30, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Monohidrato de creatina de alta pureza.' },
+                { id: 'drive', name: 'Herbalife 24 CR7 Drive Acaí 810g', stock: 60, containerSize: 60, price: 43461.42, sellPrice: 77845, weight: 60, kcal: 50, protein: 0, carbs: 13, fat: 0, fiber: 0, labelDetails: 'Bebida isotónica con electrolitos y carbohidratos.' },
+                { id: 'p1', name: 'Empaques (Vasos/Domo/Hielo)', stock: 100, containerSize: 100, price: 35000, sellPrice: 50000, weight: 100, kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, labelDetails: 'Vaso plástico, sorbete y hielo.' }
+            ],
+            presets: [
+                {
+                    id: 'b1',
+                    name: '🥤 Batido Básico al Agua',
+                    image: 'https://placehold.co/600x400/06b6d4/ffffff?text=Batido+Basico',
+                    ingredients: [{ id: 1, name: 'Batido Nutricional Cookies and Cream 550g', used: 2 }],
+                    packaging: [{ id: 'p1', name: 'Empaque', used: 1 }]
+                },
+                {
+                    id: 'b2',
+                    name: '💪 Batido Proteico Avanzado (Con PPP)',
+                    image: 'https://placehold.co/600x400/8b5cf6/ffffff?text=Batido+Proteico',
+                    ingredients: [
+                        { id: 1, name: 'Batido Nutricional Cookies and Cream 550g', used: 2 },
+                        { id: 2, name: 'Proteína Personalizada en Polvo 240g (PPP)', used: 1 }
+                    ],
+                    packaging: [{ id: 'p1', name: 'Empaque', used: 1 }]
+                },
+                {
+                    id: 'a1',
+                    name: '💧 Combo Detox Clásico (Aloe + Fibra + Té)',
+                    image: 'https://placehold.co/600x400/06b6d4/ffffff?text=Combo+Detox',
+                    ingredients: [
+                        { id: 6, name: 'Herbal Aloe Concentrado Original 473ml', used: 1 },
+                        { id: 5, name: 'Fibra Activa Manzana 210g', used: 1 },
+                        { id: 4, name: 'Herbal Tea Concentrate Limón 51g', used: 1 }
+                    ],
+                    packaging: [{ id: 'p1', name: 'Empaque', used: 1 }]
+                }
+            ],
+            salesHistory: [],
+            expensesHistory: [],
+            cuentaCorrienteHistory: [],
+            brandName: 'ALIANZA ACTIVA PROTEIN BAR',
+            brandLogo: defaultLogo,
+            primaryColor: '#06b6d4',
+            secondaryColor: '#8b5cf6'
+        };
+
+        const loadedData = loadSavedData() || defaultData;
+
+        let inventory = loadedData.inventory;
+        let presets = loadedData.presets;
+        let salesHistory = loadedData.salesHistory;
+        let expensesHistory = loadedData.expensesHistory;
+        let cuentaCorrienteHistory = loadedData.cuentaCorrienteHistory || [];
+        let brandName = loadedData.brandName;
+        let brandLogo = loadedData.brandLogo;
+        let primaryColor = loadedData.primaryColor;
+        let secondaryColor = loadedData.secondaryColor;
+
+        let activeTab = 'calculator';
+        let expenseDesc = '';
+        let expenseAmount = '';
+        let ccClient = '';
+        let ccDesc = '';
+        let ccAmount = '';
+        let notification = null;
+        let showLabelModal = false;
+        let currentLabelData = null;
+
+        let selectedPresetId = presets[0] ? presets[0].id : '';
+        let recipeName = presets[0] ? presets[0].name : '';
+        let recipeImage = presets[0] ? presets[0].image : '';
+        let markupMultiplier = 1; // Default x1 as requested
+        let ingredients = presets[0] ? JSON.parse(JSON.stringify(presets[0].ingredients)) : [];
+        let packaging = presets[0] ? JSON.parse(JSON.stringify(presets[0].packaging)) : [{ id: 'p1', name: 'Empaque', used: 1 }];
+
+        let newRecipeName = '';
+        let newRecipeImage = '';
+        let newRecipeDraftIngredients = [];
+
+        let newProdName = '';
+        let newProdPrice = '';
+        let newProdSellPrice = '';
+        let newProdSize = '';
+        let newProdKcal = '';
+        let newProdProtein = '';
+        let newProdCarbs = '';
+        let newProdFat = '';
+        let newProdFiber = '';
+        let newProdDetails = '';
+
+        function saveDataToStorage() {
+            try {
+                const dataToSave = {
+                    inventory,
+                    presets,
+                    salesHistory,
+                    expensesHistory,
+                    cuentaCorrienteHistory,
+                    brandName,
+                    brandLogo,
+                    primaryColor,
+                    secondaryColor
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            } catch (e) {
+                console.error("Error saving data", e);
+            }
+        }
+
+        function showNotificationMsg(msg) {
+            notification = msg;
+            render();
+            setTimeout(() => {
+                notification = null;
+                render();
+            }, 3000);
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(val || 0);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const passInput = document.getElementById('passwordInput').value;
+            if (passInput === APP_PASSWORD) {
+                isAuthenticated = true;
+                render();
+            } else {
+                showNotificationMsg('❌ Contraseña incorrecta.');
+            }
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                brandLogo = event.target.result;
+                saveDataToStorage();
+                showNotificationMsg('✨ Logo cargado y guardado de forma permanente.');
+                render();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleNewRecipeImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                newRecipeImage = event.target.result;
+                showNotificationMsg('✨ Imagen de receta cargada correctamente.');
+                render();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handlePresetChange(id) {
+            selectedPresetId = id;
+            const p = presets.find(item => String(item.id) === String(id));
+            if (p) {
+                recipeName = p.name;
+                recipeImage = p.image;
+                ingredients = JSON.parse(JSON.stringify(p.ingredients));
+                packaging = JSON.parse(JSON.stringify(p.packaging));
+                render();
+            }
+        }
+
+        function calculateMetrics() {
+            let totalBuyCost = 0;
+            let totalSellPriceCost = 0;
+            let tKcal = 0;
+            let tProt = 0;
+            let tCarbs = 0;
+            let tFat = 0;
+            let tFiber = 0;
+            const labelSet = [];
+
+            ingredients.forEach(item => {
+                const invRef = inventory.find(i => String(i.id) === String(item.id)) || item;
+                const buyPricePerUnit = (invRef.price || 0) / (invRef.weight || invRef.containerSize || 1);
+                totalBuyCost += buyPricePerUnit * (item.used || 0);
+
+                const sellBase = invRef.sellPrice !== undefined ? invRef.sellPrice : ((invRef.price || 0) * 1.5);
+                const sellPricePerUnit = sellBase / (invRef.weight || invRef.containerSize || 1);
+                totalSellPriceCost += sellPricePerUnit * (item.used || 0);
+
+                tKcal += (invRef.kcal || 0) * (item.used || 0);
+                tProt += (invRef.protein || 0) * (item.used || 0);
+                tCarbs += (invRef.carbs || 0) * (item.used || 0);
+                tFat += (invRef.fat || 0) * (item.used || 0);
+                tFiber += (invRef.fiber || 0) * (item.used || 0);
+
+                if (invRef.labelDetails) {
+                    labelSet.push(`${invRef.name} (x${item.used}): ${invRef.labelDetails}`);
+                }
+            });
+
+            const packBuyCost = packaging.reduce((sum, item) => {
+                const invRef = inventory.find(i => String(i.id) === String(item.id)) || item;
+                const costPerUnit = (invRef.price || 35000) / (invRef.containerSize || 100);
+                return sum + (costPerUnit * (item.used || 0));
+            }, 0);
+
+            const packSellBase = packaging.reduce((sum, item) => {
+                const invRef = inventory.find(i => String(i.id) === String(item.id)) || item;
+                const sellBase = invRef.sellPrice !== undefined ? invRef.sellPrice : 50000;
+                const costPerUnit = sellBase / (invRef.containerSize || 100);
+                return sum + (costPerUnit * (item.used || 0));
+            }, 0);
+
+            const tCost = totalBuyCost + packBuyCost;
+            const baseSellPrice = totalSellPriceCost + packSellBase;
+            const sPrice = baseSellPrice * markupMultiplier;
+            const prof = sPrice - tCost;
+            const margin = sPrice > 0 ? (prof / sPrice) * 100 : 0;
+
+            return {
+                totalIngredientCost: totalBuyCost,
+                totalPackagingCost: packBuyCost,
+                totalCost: tCost,
+                suggestedPrice: sPrice,
+                profit: prof,
+                profitMargin: margin,
+                calculatedMacros: { kcal: tKcal, protein: tProt, carbs: tCarbs, fat: tFat, fiber: tFiber },
+                aggregatedLabels: labelSet
+            };
+        }
+
+        function handleRegisterSale() {
+            const metrics = calculateMetrics();
+            let newInv = JSON.parse(JSON.stringify(inventory));
+            ingredients.forEach(ing => {
+                const invItem = newInv.find(i => String(i.id) === String(ing.id));
+                if (invItem) invItem.stock -= (ing.used || 0);
+            });
+            packaging.forEach(pack => {
+                const invItem = newInv.find(i => String(i.id) === 'p1');
+                if (invItem) invItem.stock -= (pack.used || 0);
+            });
+            inventory = newInv;
+
+            const newSale = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                recipe: recipeName,
+                image: recipeImage,
+                cost: metrics.totalCost,
+                price: metrics.suggestedPrice,
+                profit: metrics.profit
+            };
+            salesHistory.unshift(newSale);
+            saveDataToStorage();
+
+            currentLabelData = {
+                name: recipeName,
+                ingredients: ingredients.map(i => {
+                    const invRef = inventory.find(inv => String(inv.id) === String(i.id)) || i;
+                    return `${invRef.name} (x${i.used})`;
+                }),
+                labelsInfo: metrics.aggregatedLabels,
+                macros: metrics.calculatedMacros,
+                date: new Date().toLocaleDateString()
+            };
+            showLabelModal = true;
+            showNotificationMsg('✅ Venta registrada, stock descontado y etiqueta lista.');
+            render();
+        }
+
+        function generateWhatsAppOrderLink() {
+            const lowStockItems = inventory.filter(item => item.stock <= item.containerSize);
+            let message = `Hola! 🥤 Necesito hacer un pedido de reposición para mi Protein Bar (${brandName}):\n\n`;
+            if (lowStockItems.length > 0) {
+                lowStockItems.forEach(item => {
+                    const missing = Math.ceil((item.containerSize * 2 - item.stock) / item.containerSize);
+                    message += `▪️ *${item.name}*: Quedan ${(item.stock).toFixed(1)} porciones. Sugerido: ${missing} envases.\n`;
+                });
+            } else {
+                message += "Stock general estable. Solicito lista de actualización.\n";
+            }
+            message += "\n¡Quedo atento al total y pago!";
+            return `https://wa.me/?text=${encodeURIComponent(message)}`;
+        }
+
+        function addNewProductToInventory(e) {
+            e.preventDefault();
+            if (!newProdName || !newProdPrice || !newProdSize) {
+                showNotificationMsg('❌ Ingresa nombre, precio de compra y tamaño del nuevo producto.');
+                return;
+            }
+
+            const buyPrice = parseFloat(newProdPrice) || 0;
+            const sellPriceVal = parseFloat(newProdSellPrice) || (buyPrice * 1.5);
+
+            const newProduct = {
+                id: 'prod_' + Date.now(),
+                name: newProdName,
+                price: buyPrice,
+                sellPrice: sellPriceVal,
+                containerSize: parseFloat(newProdSize) || 30,
+                stock: parseFloat(newProdSize) || 30,
+                weight: parseFloat(newProdSize) || 30,
+                kcal: parseFloat(newProdKcal) || 0,
+                protein: parseFloat(newProdProtein) || 0,
+                carbs: parseFloat(newProdCarbs) || 0,
+                fat: parseFloat(newProdFat) || 0,
+                fiber: parseFloat(newProdFiber) || 0,
+                labelDetails: newProdDetails || 'Suplemento nutricional de alta calidad.'
+            };
+
+            inventory.push(newProduct);
+            saveDataToStorage();
+
+            newProdName = '';
+            newProdPrice = '';
+            newProdSellPrice = '';
+            newProdSize = '';
+            newProdKcal = '';
+            newProdProtein = '';
+            newProdCarbs = '';
+            newProdFat = '';
+            newProdFiber = '';
+            newProdDetails = '';
+
+            showNotificationMsg('✨ ¡Nuevo producto agregado al stock y márgenes!');
+            render();
+        }
+
+        function deleteInventoryProduct(id) {
+            if (inventory.length <= 1) {
+                showNotificationMsg('❌ No puedes eliminar todos los productos.');
+                return;
+            }
+            inventory = inventory.filter(i => String(i.id) !== String(id));
+            saveDataToStorage();
+            showNotificationMsg('🗑️ Producto eliminado del inventario.');
+            render();
+        }
+
+        function addIngredientToDraft() {
+            const prodId = document.getElementById('newRecipeSelProd').value;
+            const amount = parseFloat(document.getElementById('newRecipeSelAmount').value) || 1;
+            const prod = inventory.find(i => String(i.id) === String(prodId));
+            if (!prod) return;
+
+            const existing = newRecipeDraftIngredients.find(i => String(i.id) === String(prod.id));
+            if (existing) {
+                existing.used += amount;
+            } else {
+                newRecipeDraftIngredients.push({ id: prod.id, name: prod.name, used: amount });
+            }
+            render();
+        }
+
+        function removeDraftIng(idx) {
+            newRecipeDraftIngredients.splice(idx, 1);
+            render();
+        }
+
+        function saveNewRecipe() {
+            const nameInput = document.getElementById('newRecipeNameInput').value;
+            if (!nameInput) {
+                showNotificationMsg('❌ Ingresa un nombre para la receta.');
+                return;
+            }
+            if (newRecipeDraftIngredients.length === 0) {
+                showNotificationMsg('❌ Agrega al menos un ingrediente.');
+                return;
+            }
+
+            const newId = 'custom_' + Date.now();
+            const newPreset = {
+                id: newId,
+                name: nameInput,
+                image: newRecipeImage || 'https://placehold.co/600x400/06b6d4/ffffff?text=Receta',
+                ingredients: JSON.parse(JSON.stringify(newRecipeDraftIngredients)),
+                packaging: [{ id: 'p1', name: 'Empaque', used: 1 }]
+            };
+
+            presets.push(newPreset);
+            saveDataToStorage();
+
+            selectedPresetId = newId;
+            recipeName = newPreset.name;
+            recipeImage = newPreset.image;
+            ingredients = JSON.parse(JSON.stringify(newPreset.ingredients));
+            packaging = JSON.parse(JSON.stringify(newPreset.packaging));
+
+            newRecipeName = '';
+            newRecipeImage = '';
+            newRecipeDraftIngredients = [];
+            activeTab = 'calculator';
+            showNotificationMsg('✨ ¡Receta creada con éxito!');
+            render();
+        }
+
+        function deleteCurrentPreset() {
+            if (presets.length <= 1) {
+                showNotificationMsg('❌ No puedes eliminar tu única receta.');
+                return;
+            }
+            presets = presets.filter(p => String(p.id) !== String(selectedPresetId));
+            saveDataToStorage();
+
+            const first = presets[0];
+            selectedPresetId = first.id;
+            recipeName = first.name;
+            recipeImage = first.image;
+            ingredients = JSON.parse(JSON.stringify(first.ingredients));
+            packaging = JSON.parse(JSON.stringify(first.packaging));
+            showNotificationMsg('🗑️ Receta eliminada del menú.');
+            render();
+        }
+
+        function addExpense() {
+            const desc = document.getElementById('expenseDescInput').value;
+            const amt = parseFloat(document.getElementById('expenseAmountInput').value);
+            if (!desc || !amt) return;
+
+            expensesHistory.unshift({
+                id: Date.now(),
+                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                desc: desc,
+                amount: amt
+            });
+            saveDataToStorage();
+
+            expenseDesc = '';
+            expenseAmount = '';
+            showNotificationMsg('💸 Gasto de reposición registrado.');
+            render();
+        }
+
+        function updateExpenseDesc(id, val) {
+            expensesHistory = expensesHistory.map(exp => String(exp.id) === String(id) ? { ...exp, desc: val } : exp);
+            saveDataToStorage();
+        }
+
+        function updateExpenseAmount(id, val) {
+            const num = parseFloat(val) || 0;
+            expensesHistory = expensesHistory.map(exp => String(exp.id) === String(id) ? { ...exp, amount: num } : exp);
+            saveDataToStorage();
+        }
+
+        function deleteExpense(id) {
+            expensesHistory = expensesHistory.filter(exp => String(exp.id) !== String(id));
+            saveDataToStorage();
+            showNotificationMsg('🗑️ Gasto eliminado.');
+            render();
+        }
+
+        function addCuentaCorriente() {
+            const client = document.getElementById('ccClientInput').value;
+            const desc = document.getElementById('ccDescInput').value;
+            const amt = parseFloat(document.getElementById('ccAmountInput').value);
+            if (!client || !desc || !amt) return;
+
+            cuentaCorrienteHistory.unshift({
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                client: client,
+                desc: desc,
+                amount: amt,
+                paid: false
+            });
+            saveDataToStorage();
+
+            ccClient = '';
+            ccDesc = '';
+            ccAmount = '';
+            showNotificationMsg('📝 Cuenta Corriente registrada para este mes.');
+            render();
+        }
+
+        function toggleCuentaCorrientePaid(id) {
+            cuentaCorrienteHistory = cuentaCorrienteHistory.map(f => String(f.id) === String(id) ? { ...f, paid: !f.paid } : f);
+            saveDataToStorage();
+            render();
+        }
+
+        function deleteCuentaCorriente(id) {
+            cuentaCorrienteHistory = cuentaCorrienteHistory.filter(f => String(f.id) !== String(id));
+            saveDataToStorage();
+            showNotificationMsg('🗑️ Registro eliminado.');
+            render();
+        }
+
+        function updateInventoryPrice(id, val) {
+            const num = Math.max(0, parseFloat(val) || 0);
+            inventory = inventory.map(i => String(i.id) === String(id) ? { ...i, price: num } : i);
+            saveDataToStorage();
+            showNotificationMsg('💲 Precio de compra actualizado.');
+            render();
+        }
+
+        function updateInventorySellPrice(id, val) {
+            const num = Math.max(0, parseFloat(val) || 0);
+            inventory = inventory.map(i => String(i.id) === String(id) ? { ...i, sellPrice: num } : i);
+            saveDataToStorage();
+            showNotificationMsg('💲 Precio de venta actualizado.');
+            render();
+        }
+
+        function updateInventoryMargin(id, val) {
+            const margin = parseFloat(val) || 0;
+            inventory = inventory.map(item => {
+                if (String(item.id) === String(id)) {
+                    const buy = item.price || 0;
+                    const sell = margin >= 100 ? buy * 3 : buy / (1 - margin / 100);
+                    return { ...item, sellPrice: Math.round(sell) };
+                }
+                return item;
+            });
+            saveDataToStorage();
+            showNotificationMsg('📊 Margen y precio de venta actualizados.');
+            render();
+        }
+
+        function updateInventoryStock(id, val) {
+            const num = Math.max(0, parseFloat(val) || 0);
+            inventory = inventory.map(i => String(i.id) === String(id) ? { ...i, stock: num } : i);
+            saveDataToStorage();
+        }
+
+        function updateInventorySize(id, val) {
+            const num = Math.max(1, parseFloat(val) || 1);
+            inventory = inventory.map(i => String(i.id) === String(id) ? { ...i, containerSize: num } : i);
+            saveDataToStorage();
+        }
+
+        function updateIngUsed(id, val) {
+            const num = Math.max(0, parseFloat(val) || 0);
+            ingredients = ingredients.map(i => String(i.id) === String(id) ? { ...i, used: num } : i);
+        }
+
+        function removeIng(id) {
+            ingredients = ingredients.filter(i => String(i.id) !== String(id));
+            render();
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (!isAuthenticated) {
+                app.innerHTML = `
+                    <div class="min-h-[80vh] flex items-center justify-center p-4">
+                        <div class="bg-slate-800 border-2 border-cyan-500/50 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+                            <div class="flex justify-center">
+                                <img src="${brandLogo}" alt="" class="w-20 h-20 rounded-full object-cover border-2 shadow-lg" style="border-color: ${primaryColor}" />
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-black text-white">${brandName}</h1>
+                                <p class="text-sm text-slate-400 mt-1">Ingresa tu contraseña para acceder al sistema</p>
+                            </div>
+                            <form onsubmit="handleLogin(event)" class="space-y-4">
+                                <input type="password" id="passwordInput" placeholder="Contraseña de acceso" class="w-full p-4 bg-slate-900 border border-slate-700 text-white rounded-2xl text-center font-bold tracking-widest text-lg outline-none focus:border-cyan-400" required />
+                                <button type="submit" class="w-full text-slate-950 font-black p-4 rounded-2xl transition-all shadow-lg text-base hover:opacity-90" style="background-color: ${primaryColor}">
+                                    🔑 Ingresar al Sistema
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const metrics = calculateMetrics();
+            let html = '';
+
+            if (notification) {
+                html += `
+                    <div class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-medium transition-all animate-bounce border border-cyan-500/50" style="background-color: ${secondaryColor}">
+                        ${notification}
+                    </div>
+                `;
+            }
+
+            if (showLabelModal && currentLabelData) {
+                html += `
+                    <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                        <div class="bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-cyan-500 text-center space-y-4 print:shadow-none print:border-0 print:bg-white print:text-black">
+                            <div class="border-2 border-dashed border-cyan-500/40 p-5 rounded-2xl bg-slate-950 space-y-3 print:bg-white print:border-slate-300">
+                                <div class="flex justify-center">
+                                    <img src="${brandLogo}" alt="${brandName}" class="w-16 h-16 rounded-full object-cover border-2 shadow-md" style="border-color: ${primaryColor}"/>
+                                </div>
+                                <div>
+                                    <h3 class="font-black text-cyan-400 text-base uppercase tracking-wider print:text-black">${brandName}</h3>
+                                    <p class="text-xs text-slate-400 font-medium print:text-slate-600">Etiqueta Oficial para Vaso</p>
+                                </div>
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-left space-y-1 print:bg-slate-50 print:border-slate-200">
+                                    <h4 class="font-bold text-slate-100 text-sm border-b border-slate-800 pb-1 truncate print:text-black print:border-slate-300">${currentLabelData.name}</h4>
+                                    <div class="text-[11px] text-slate-300 space-y-0.5 pt-1 print:text-slate-700">
+                                        <span class="font-bold block text-cyan-300 print:text-black">Contenido / Insumos:</span>
+                                        ${currentLabelData.ingredients.map(ing => `<div>• ${ing}</div>`).join('')}
+                                        ${currentLabelData.labelsInfo.length > 0 ? `
+                                            <div class="mt-1 pt-1 border-t border-dashed border-slate-800 text-[10px] text-slate-400 space-y-1 print:border-slate-200 print:text-slate-600">
+                                                <span class="font-bold block text-slate-300 print:text-black">Composición oficial:</span>
+                                                ${currentLabelData.labelsInfo.map(lbl => `<div>- ${lbl}</div>`).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="p-2.5 rounded-xl text-left border bg-cyan-950/30 border-cyan-800/40 print:bg-slate-100 print:border-slate-200">
+                                    <span class="text-[10px] font-bold uppercase block mb-1 text-cyan-400 print:text-black">🧬 Información Nutricional (Aprox):</span>
+                                    <div class="grid grid-cols-2 gap-1 text-[11px] font-semibold text-cyan-200 print:text-slate-800">
+                                        <div>🔥 Calorías: ${currentLabelData.macros.kcal.toFixed(0)} kcal</div>
+                                        <div>💪 Proteínas: ${currentLabelData.macros.protein.toFixed(1)} g</div>
+                                        <div>🌾 Carbos: ${currentLabelData.macros.carbs.toFixed(1)} g</div>
+                                        <div>🌾 Fibras: ${currentLabelData.macros.fiber.toFixed(1)} g</div>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-slate-500 font-medium print:text-slate-500">
+                                    Fecha: ${currentLabelData.date} • ¡Disfruta tu nutrición!
+                                </div>
+                            </div>
+                            <div class="flex gap-3 pt-2">
+                                <button onclick="window.print()" class="flex-1 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-md hover:opacity-90" style="background-color: ${primaryColor}">
+                                    🖨️ Imprimir Etiqueta
+                                </button>
+                                <button onclick="showLabelModal=false; render();" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl text-sm transition-colors border border-slate-700">
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-4 bg-slate-800 p-4 rounded-2xl shadow-lg border border-slate-700">
+                    <div class="flex flex-wrap gap-2 bg-slate-900 p-1.5 rounded-xl shadow-inner border border-slate-800">
+                        <button onclick="activeTab='calculator'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'calculator' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            🧮 Calculadora & Tragos
+                        </button>
+                        <button onclick="activeTab='recipes'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'recipes' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            ✨ Creador de Recetas
+                        </button>
+                        <button onclick="activeTab='inventory'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'inventory' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            📦 Base de Stock & Precios
+                        </button>
+                        <button onclick="activeTab='margins'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'margins' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            📊 Márgenes de Tarros
+                        </button>
+                        <button onclick="activeTab='register'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'register' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            💰 Caja & Gastos (${salesHistory.length})
+                        </button>
+                        <button onclick="activeTab='cuentaCorriente'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'cuentaCorriente' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            📝 Cuenta Corriente (${cuentaCorrienteHistory.filter(f=>!f.paid).length})
+                        </button>
+                        <button onclick="activeTab='branding'; render();" class="px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'branding' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}">
+                            🎨 Mi Marca & Logo
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <img src="${brandLogo}" alt="" class="w-10 h-10 rounded-full object-cover border-2" style="border-color: ${primaryColor}" />
+                        <span class="font-extrabold text-sm text-cyan-300 tracking-wide truncate max-w-[200px]">${brandName}</span>
+                    </div>
+                </div>
+            `;
+
+            if (activeTab === 'calculator') {
+                html += `
+                    <header class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
+                        <div class="flex items-center gap-4 w-full lg:w-auto">
+                            <img src="${recipeImage}" alt="${recipeName}" onerror="this.src='https://placehold.co/150x150/06b6d4/ffffff?text=Receta'" class="w-20 h-20 rounded-2xl object-cover shadow-md border-2 border-cyan-500/50 flex-shrink-0"/>
+                            <div>
+                                <h1 class="text-2xl font-bold text-white">${recipeName}</h1>
+                                <p class="text-sm text-slate-400">Costo exacto basado en precio de venta y macros oficiales</p>
+                            </div>
+                        </div>
+                        <div class="w-full lg:w-auto flex flex-col md:flex-row gap-3">
+                            <div class="w-full">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Cargar Receta del Menú</label>
+                                <select onchange="handlePresetChange(this.value)" class="w-full md:w-72 px-4 py-2 bg-slate-900 border border-slate-700 text-cyan-300 rounded-lg font-medium text-sm cursor-pointer outline-none">
+                                    ${presets.map(p => `<option value="${p.id}" ${String(p.id) === String(selectedPresetId) ? 'selected' : ''}>${p.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="w-full flex items-end">
+                                <button onclick="saveDataToStorage(); showNotificationMsg('💾 Receta guardada exitosamente.');" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow-sm border border-slate-600">
+                                    💾 Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                                <div class="p-5 border-b border-slate-700 bg-slate-800/80 flex justify-between items-center">
+                                    <div>
+                                        <h2 class="text-lg font-bold text-white">Ingredientes en la Receta</h2>
+                                        <p class="text-xs text-slate-400">Modifica las porciones utilizadas al instante</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-900/60 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+                                                <th class="p-3 font-medium">Insumo</th>
+                                                <th class="p-3 font-medium">Precio Venta Tarro</th>
+                                                <th class="p-3 font-medium">Porciones Usadas</th>
+                                                <th class="p-3 font-medium">Subtotal</th>
+                                                <th class="p-3 font-medium text-center">Quitar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-700/60">
+                                            ${ingredients.map(ing => {
+                                                const invRef = inventory.find(i => String(i.id) === String(ing.id)) || ing;
+                                                const baseVal = invRef.sellPrice !== undefined ? invRef.sellPrice : ((invRef.price || 0) * 1.5);
+                                                const costPerUnit = baseVal / (invRef.weight || invRef.containerSize || 1);
+                                                const portionCost = costPerUnit * (ing.used || 0);
+                                                return `
+                                                    <tr class="hover:bg-slate-700/30 transition-colors">
+                                                        <td class="p-3 font-bold text-slate-200 text-sm">${ing.name}</td>
+                                                        <td class="p-3 text-sm text-slate-300">${formatCurrency(baseVal)}</td>
+                                                        <td class="p-3">
+                                                            <input type="number" step="0.5" value="${ing.used || 0}" onchange="updateIngUsed('${ing.id}', this.value); render();" class="w-20 p-2 bg-slate-900 border border-slate-700 rounded font-bold text-sm text-cyan-300 focus:border-cyan-500 outline-none"/>
+                                                        </td>
+                                                        <td class="p-3 font-bold text-cyan-400 text-sm">${formatCurrency(portionCost)}</td>
+                                                        <td class="p-3 text-center">
+                                                            <button onclick="removeIng('${ing.id}')" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors">🗑️</button>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-5 flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-bold text-white text-sm">Empaque / Descartables incluidos</h3>
+                                    <p class="text-xs text-slate-400">Vaso, sorbete, servilleta y hielo</p>
+                                </div>
+                                <span class="font-bold text-cyan-300 text-base">${formatCurrency(metrics.totalPackagingCost)}</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="rounded-2xl shadow-xl p-6 text-white sticky top-6 border border-slate-700" style="background-color: ${secondaryColor}">
+                                <h3 class="text-xl font-bold mb-6 pb-4 border-b border-purple-400/30">Resumen Financiero</h3>
+                                <div class="space-y-4 mb-6">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-purple-200 text-sm">Costo Insumos (Precio Venta)</span>
+                                        <span class="font-medium">${formatCurrency(metrics.totalIngredientCost + metrics.totalPackagingCost)}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-4 border-t border-purple-400/30">
+                                        <span class="text-white font-medium">COSTO TOTAL (CTP)</span>
+                                        <span class="text-xl font-bold text-cyan-300">${formatCurrency(metrics.totalCost)}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-900/80 rounded-xl p-4 mb-6 border border-purple-500/30">
+                                    <label class="block text-sm text-purple-200 mb-2">Multiplicador de Ganancia</label>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-purple-300 font-bold">x</span>
+                                        <input type="number" step="0.1" value="${markupMultiplier}" onchange="markupMultiplier=parseFloat(this.value)||1; render();" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-bold outline-none focus:border-cyan-400"/>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div>
+                                        <span class="block text-purple-200 text-sm mb-1">Precio Sugerido (PVP)</span>
+                                        <div class="text-3xl font-black text-cyan-300">${formatCurrency(metrics.suggestedPrice)}</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-purple-400/30">
+                                        <div>
+                                            <span class="block text-purple-200 text-xs mb-1">Ganancia Neta</span>
+                                            <span class="text-lg font-bold text-cyan-300">${formatCurrency(metrics.profit)}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-purple-200 text-xs mb-1">Margen</span>
+                                            <span class="text-lg font-bold text-cyan-300">${metrics.profitMargin.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="handleRegisterSale()" class="w-full mt-8 text-slate-950 font-extrabold py-4 px-4 rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 text-lg hover:opacity-90" style="background-color: ${primaryColor}">
+                                    <span>🛒</span> Vender y Generar Etiqueta
+                                </button>
+                            </div>
+                            <div class="bg-slate-800 border border-cyan-500/30 rounded-2xl p-5 shadow-lg">
+                                <h4 class="font-bold text-cyan-300 mb-3 text-sm flex items-center gap-2">
+                                    🧬 Información Nutricional Oficial (Calculada)
+                                </h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-300">
+                                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-700">🔥 Calorías: <span class="font-bold text-cyan-400">${metrics.calculatedMacros.kcal.toFixed(0)} kcal</span></div>
+                                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-700">💪 Proteínas: <span class="font-bold text-cyan-400">${metrics.calculatedMacros.protein.toFixed(1)} g</span></div>
+                                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-700">🌾 Carbohidratos: <span class="font-bold text-cyan-400">${metrics.calculatedMacros.carbs.toFixed(1)} g</span></div>
+                                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-700">🌾 Fibras: <span class="font-bold text-cyan-400">${metrics.calculatedMacros.fiber.toFixed(1)} g</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'recipes') {
+                html += `
+                    <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 md:p-8 space-y-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Creador Súper Fácil de Recetas</h2>
+                                <p class="text-sm text-slate-400 mt-1">Crea nuevas bebidas o combos seleccionando los productos y subiendo tu foto desde la PC sin límite de tamaño.</p>
+                            </div>
+                            <button onclick="deleteCurrentPreset()" class="bg-red-950/50 hover:bg-red-900 text-red-400 hover:text-white border border-red-800 text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2">
+                                🗑️ Eliminar Receta Actual
+                            </button>
+                        </div>
+                        <div class="space-y-6 bg-slate-900 p-6 rounded-2xl border border-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre de la Receta / Combo</label>
+                                    <input type="text" id="newRecipeNameInput" value="${newRecipeName}" oninput="newRecipeName=this.value" placeholder="Ej. Batido Energético Power" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm font-medium outline-none focus:border-cyan-500"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Imagen de Receta (Subir desde PC)</label>
+                                    <label class="flex cursor-pointer bg-slate-800 border border-slate-700 hover:border-cyan-500 p-3 rounded-xl items-center justify-center gap-2 text-slate-300 font-medium text-xs transition-colors">
+                                        📁 <span>${newRecipeImage ? 'Imagen cargada ✅' : 'Subir archivo de PC...'}</span>
+                                        <input type="file" accept="image/*" onchange="handleNewRecipeImageUpload(event)" class="hidden"/>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                                <h3 class="font-bold text-slate-200 text-sm">Seleccionar Ingredientes y Porciones</h3>
+                                <div class="flex flex-col md:flex-row gap-3 items-end">
+                                    <div class="w-full md:w-2/5">
+                                        <label class="block text-xs text-slate-400 mb-1">Producto</label>
+                                        <select id="newRecipeSelProd" class="w-full p-3 bg-slate-900 border border-slate-700 text-cyan-300 rounded-xl text-sm font-medium outline-none">
+                                            ${inventory.filter(i => String(i.id) !== 'p1').map(i => `<option value="${i.id}">${i.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div class="w-full md:w-1/4">
+                                        <label class="block text-xs text-slate-400 mb-1">Porciones a usar</label>
+                                        <input type="number" id="newRecipeSelAmount" step="0.5" min="0.5" value="1" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm font-bold outline-none"/>
+                                    </div>
+                                    <div class="w-full md:w-1/3">
+                                        <button type="button" onclick="addIngredientToDraft()" class="w-full text-slate-950 font-extrabold p-3 rounded-xl transition-colors text-sm shadow-md flex items-center justify-center gap-2 hover:opacity-90" style="background-color: ${primaryColor}">
+                                            ➕ Agregar a la Receta
+                                        </button>
+                                    </div>
+                                </div>
+                                ${newRecipeDraftIngredients.length > 0 ? `
+                                    <div class="mt-4 pt-4 border-t border-slate-700 space-y-2">
+                                        <span class="text-xs font-bold text-slate-400 uppercase">Ingredientes seleccionados:</span>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${newRecipeDraftIngredients.map((item, idx) => `
+                                                <div class="bg-cyan-950/60 border border-cyan-800 text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
+                                                    <span>${item.name} (x${item.used})</span>
+                                                    <button type="button" onclick="removeDraftIng(${idx})" class="text-red-400 hover:text-red-300 font-bold ml-1">×</button>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="flex justify-end pt-2">
+                                <button type="button" onclick="saveNewRecipe()" class="text-slate-950 font-extrabold px-8 py-3.5 rounded-xl transition-all shadow-md text-sm hover:opacity-90" style="background-color: ${primaryColor}">
+                                    ✨ Guardar Nueva Receta en el Menú
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-slate-700">
+                            <h3 class="font-bold text-white text-sm mb-3">Recetas actuales en tu Menú:</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                ${presets.map(p => `
+                                    <div onclick="handlePresetChange('${p.id}'); activeTab='calculator'; render();" class="p-4 rounded-xl border border-slate-700 hover:border-cyan-500 cursor-pointer transition-all flex items-center gap-3 bg-slate-900 shadow-sm">
+                                        <img src="${p.image}" alt="" class="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0"/>
+                                        <div class="overflow-hidden">
+                                            <h4 class="font-bold text-white text-sm truncate">${p.name}</h4>
+                                            <span class="text-xs font-medium text-cyan-400">Click para abrir</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'inventory') {
+                html += `
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                            <div class="p-6 border-b border-slate-700 bg-slate-900 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">Base de Stock & Control de Inventario</h2>
+                                    <p class="text-sm text-slate-400 mt-1">Actualiza los precios de lista y controla las porciones restantes en tus tarros.</p>
+                                </div>
+                                <a href="${generateWhatsAppOrderLink()}" target="_blank" class="text-slate-950 font-extrabold px-5 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm hover:opacity-90" style="background-color: ${primaryColor}">
+                                    <span>💬</span> Pedir Reposición por WhatsApp
+                                </a>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+                                            <th class="p-5 font-bold">Insumo / Producto</th>
+                                            <th class="p-5 font-bold">Precio Compra Tarro ($)</th>
+                                            <th class="p-5 font-bold text-center">Porciones Disponibles</th>
+                                            <th class="p-5 font-bold text-center">Porciones Tarro Base</th>
+                                            <th class="p-5 font-bold text-center">Eliminar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-700/60">
+                                        ${inventory.map(item => `
+                                            <tr class="hover:bg-slate-700/30 transition-colors">
+                                                <td class="p-5 font-bold text-slate-200 flex items-center gap-3">
+                                                    <span class="text-xl">${String(item.id) === 'p1' ? '🥤' : '🌿'}</span> ${item.name}
+                                                </td>
+                                                <td class="p-5">
+                                                    <input type="number" value="${item.price}" onchange="updateInventoryPrice('${item.id}', this.value)" class="w-36 p-2 bg-slate-900 border border-slate-700 rounded-lg font-bold text-sm text-cyan-300 outline-none focus:border-cyan-500"/>
+                                                </td>
+                                                <td class="p-5 text-center">
+                                                    <input type="number" value="${item.stock}" onchange="updateInventoryStock('${item.id}', this.value)" class="w-28 text-center p-2 bg-slate-900 border border-slate-700 rounded-lg font-black text-lg text-white outline-none focus:border-cyan-500"/>
+                                                </td>
+                                                <td class="p-5 text-center">
+                                                    <input type="number" value="${item.containerSize}" onchange="updateInventorySize('${item.id}', this.value)" class="w-24 text-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 outline-none focus:border-cyan-500"/>
+                                                </td>
+                                                <td class="p-5 text-center">
+                                                    ${String(item.id) !== 'p1' ? `<button onclick="deleteInventoryProduct('${item.id}')" class="p-2 text-red-400 hover:text-red-300 transition-colors">🗑️</button>` : '<span class="text-slate-600">-</span>'}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 md:p-8 space-y-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">➕ Agregar Nuevo Producto al Inventario & Macros</h3>
+                                <p class="text-sm text-slate-400 mt-1">Crea un nuevo insumo con su precio de compra, precio de venta, porciones y perfil nutricional oficial.</p>
+                            </div>
+                            <form onsubmit="addNewProductToInventory(event)" class="space-y-4 bg-slate-900 p-6 rounded-2xl border border-slate-700">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre del Producto</label>
+                                        <input type="text" id="newProdNameInput" value="${newProdName}" oninput="newProdName=this.value" placeholder="Ej. Multivitamin Complex" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500" required/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Precio Compra Tarro ($)</label>
+                                        <input type="number" id="newProdPriceInput" value="${newProdPrice}" oninput="newProdPrice=this.value" placeholder="0.00" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500" required/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Precio Venta Tarro ($)</label>
+                                        <input type="number" id="newProdSellPriceInput" value="${newProdSellPrice}" oninput="newProdSellPrice=this.value" placeholder="0.00" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Porciones por Envase</label>
+                                        <input type="number" id="newProdSizeInput" value="${newProdSize}" oninput="newProdSize=this.value" placeholder="30" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500" required/>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Calorías (kcal)</label>
+                                        <input type="number" step="0.1" value="${newProdKcal}" oninput="newProdKcal=this.value" placeholder="0" class="w-full p-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs outline-none"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Proteínas (g)</label>
+                                        <input type="number" step="0.1" value="${newProdProtein}" oninput="newProdProtein=this.value" placeholder="0" class="w-full p-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs outline-none"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Carbos (g)</label>
+                                        <input type="number" step="0.1" value="${newProdCarbs}" oninput="newProdCarbs=this.value" placeholder="0" class="w-full p-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs outline-none"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Grasas (g)</label>
+                                        <input type="number" step="0.1" value="${newProdFat}" oninput="newProdFat=this.value" placeholder="0" class="w-full p-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs outline-none"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Fibra (g)</label>
+                                        <input type="number" step="0.1" value="${newProdFiber}" oninput="newProdFiber=this.value" placeholder="0" class="w-full p-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs outline-none"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Detalle de Etiqueta / Ingredientes</label>
+                                    <input type="text" value="${newProdDetails}" oninput="newProdDetails=this.value" placeholder="Ej. Vitaminas A, C, E, minerales y antioxidantes." class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm outline-none"/>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button type="submit" class="text-slate-950 font-extrabold px-8 py-3.5 rounded-xl transition-all shadow-md text-sm hover:opacity-90" style="background-color: ${primaryColor}">
+                                        💾 Guardar Producto en Stock & Menú
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'margins') {
+                html += `
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">📊 Análisis de Margen y Ganancia por Tarro</h2>
+                                <p class="text-sm text-slate-400 mt-1">Compara cuánto te cuesta comprar cada pote de batido/insumo y a cuánto lo vendes al público. ¡Modifica directamente el precio de compra, precio de venta o margen (%)!</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+                                            <th class="p-5 font-bold">Producto / Insumo</th>
+                                            <th class="p-5 font-bold">Precio Compra Tarro ($)</th>
+                                            <th class="p-5 font-bold">Precio Venta Tarro ($)</th>
+                                            <th class="p-5 font-bold">Margen (%)</th>
+                                            <th class="p-5 font-bold text-right">Ganancia Neta por Tarro ($)</th>
+                                            <th class="p-5 font-bold text-center">Eliminar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-700/60">
+                                        ${inventory.map(item => {
+                                            const buyPrice = item.price || 0;
+                                            const sellPrice = item.sellPrice || (buyPrice * 1.5);
+                                            const profit = sellPrice - buyPrice;
+                                            const margin = sellPrice > 0 ? (profit / sellPrice) * 100 : 0;
+                                            return `
+                                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                                    <td class="p-5 font-bold text-slate-200">${item.name}</td>
+                                                    <td class="p-5">
+                                                        <input type="number" value="${buyPrice}" onchange="updateInventoryPrice('${item.id}', this.value)" class="w-32 p-2 bg-slate-900 border border-slate-700 rounded-lg font-bold text-sm text-cyan-300 outline-none focus:border-cyan-500"/>
+                                                    </td>
+                                                    <td class="p-5">
+                                                        <input type="number" value="${sellPrice}" onchange="updateInventorySellPrice('${item.id}', this.value)" class="w-32 p-2 bg-slate-900 border border-slate-700 rounded-lg font-bold text-sm text-cyan-300 outline-none focus:border-cyan-500"/>
+                                                    </td>
+                                                    <td class="p-5">
+                                                        <input type="number" step="0.1" value="${margin.toFixed(1)}" onchange="updateInventoryMargin('${item.id}', this.value)" class="w-28 p-2 bg-slate-900 border border-slate-700 rounded-lg font-bold text-sm text-purple-300 outline-none focus:border-purple-500"/>
+                                                    </td>
+                                                    <td class="p-5 text-right font-black text-cyan-400">${formatCurrency(profit)}</td>
+                                                    <td class="p-5 text-center">
+                                                        ${String(item.id) !== 'p1' ? `<button onclick="deleteInventoryProduct('${item.id}')" class="p-2 text-red-400 hover:text-red-300 transition-colors">🗑️</button>` : '<span class="text-slate-600">-</span>'}
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'register') {
+                const totalCostFromSales = salesHistory.reduce((s, x) => s + x.cost, 0);
+                const totalProfitFromSales = salesHistory.reduce((s, x) => s + (x.price - x.cost), 0);
+                const totalRev = salesHistory.reduce((s, x) => s + x.price, 0);
+                const totalExp = expensesHistory.reduce((s, x) => s + x.amount, 0);
+                const netCaja = totalRev - totalExp;
+
+                html += `
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Control de Caja & Gastos</h2>
+                                <p class="text-sm text-slate-400 mt-1">Desglose de inversión (Costo), ganancia por ventas y caja total.</p>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl text-center">
+                                    <span class="block text-xs text-slate-400 font-bold uppercase">Inversión (Costo)</span>
+                                    <span class="text-base font-bold text-amber-400">${formatCurrency(totalCostFromSales)}</span>
+                                </div>
+                                <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl text-center">
+                                    <span class="block text-xs text-slate-400 font-bold uppercase">Ganancia Ventas</span>
+                                    <span class="text-base font-bold text-emerald-400">${formatCurrency(totalProfitFromSales)}</span>
+                                </div>
+                                <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl text-center">
+                                    <span class="block text-xs text-slate-400 font-bold uppercase">Ingreso (Caja Total)</span>
+                                    <span class="text-base font-bold text-cyan-400">${formatCurrency(totalRev)}</span>
+                                </div>
+                                <div class="text-white p-3 rounded-xl text-center shadow-md border border-purple-500/50" style="background-color: ${secondaryColor}">
+                                    <span class="block text-xs text-purple-200 font-bold uppercase">Caja Neta (Menos Gastos)</span>
+                                    <span class="text-base font-black text-cyan-300">${formatCurrency(netCaja)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 h-fit space-y-6">
+                                <div>
+                                    <h3 class="font-bold text-white text-lg mb-4">💸 Registrar Gasto de Reposición</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Descripción</label>
+                                            <input type="text" id="expenseDescInput" value="${expenseDesc}" oninput="expenseDesc=this.value" placeholder="Ej. Reposición Tarros F1" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Monto ($)</label>
+                                            <input type="number" id="expenseAmountInput" value="${expenseAmount}" oninput="expenseAmount=this.value" placeholder="0.00" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                        </div>
+                                        <button onclick="addExpense()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md">
+                                            Registrar Inversión / Gasto
+                                        </button>
+                                    </div>
+                                </div>
+                                ${expensesHistory.length > 0 ? `
+                                    <div class="pt-4 border-t border-slate-700">
+                                        <h4 class="font-bold text-slate-300 text-sm mb-3">Historial de Gastos (Editable)</h4>
+                                        <div class="space-y-2 max-h-56 overflow-y-auto">
+                                            ${expensesHistory.map(exp => `
+                                                <div class="bg-red-950/40 border border-red-900/50 p-3 rounded-xl space-y-2 text-xs">
+                                                    <div class="flex justify-between items-center text-red-400">
+                                                        <span>${exp.date}</span>
+                                                        <button onclick="deleteExpense('${exp.id}')" class="text-red-300 hover:text-white font-bold">🗑️ Eliminar</button>
+                                                    </div>
+                                                    <div class="grid grid-cols-2 gap-2">
+                                                        <input type="text" value="${exp.desc}" onchange="updateExpenseDesc('${exp.id}', this.value)" class="p-2 bg-slate-900 border border-slate-700 text-white rounded-lg font-medium text-xs outline-none focus:border-red-400"/>
+                                                        <input type="number" value="${exp.amount}" onchange="updateExpenseAmount('${exp.id}', this.value)" class="p-2 bg-slate-900 border border-slate-700 text-red-300 rounded-lg font-black text-xs outline-none focus:border-red-400"/>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="lg:col-span-2 bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                                <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center">
+                                    <h3 class="font-bold text-white text-lg">Historial de Ventas</h3>
+                                    ${salesHistory.length > 0 ? `<button onclick="salesHistory=[]; saveDataToStorage(); render();" class="text-xs text-red-400 hover:underline font-bold">Limpiar</button>` : ''}
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+                                                <th class="p-4 font-bold">Fecha / Hora</th>
+                                                <th class="p-4 font-bold">Bebida</th>
+                                                <th class="p-4 font-bold text-right">Costo (Inversión)</th>
+                                                <th class="p-4 font-bold text-right">Ganancia Neta</th>
+                                                <th class="p-4 font-bold text-right">PVP Total (Caja)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-700/60">
+                                            ${salesHistory.map(sale => `
+                                                <tr class="hover:bg-slate-700/30 transition-colors">
+                                                    <td class="p-4 text-xs text-slate-400">${sale.date}</td>
+                                                    <td class="p-4 font-bold text-white text-sm">${sale.recipe}</td>
+                                                    <td class="p-4 text-right text-sm text-amber-400">${formatCurrency(sale.cost)}</td>
+                                                    <td class="p-4 text-right text-sm font-bold text-emerald-400">+${formatCurrency(sale.price - sale.cost)}</td>
+                                                    <td class="p-4 text-right text-sm font-bold text-cyan-300">${formatCurrency(sale.price)}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    ${salesHistory.length === 0 ? `<div class="p-16 text-center text-slate-400 text-sm">No hay ventas registradas todavía. Los datos se guardan mes a mes automáticamente.</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'cuentaCorriente') {
+                const totalCCPendiente = cuentaCorrienteHistory.filter(f => !f.paid).reduce((s, x) => s + x.amount, 0);
+                html += `
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">📝 Cuenta Corriente del Mes</h2>
+                                <p class="text-sm text-slate-400 mt-1">Lleva el control exacto de quién te debe qué consumiciones este mes. Queda guardado hasta que marques como pagado o borres.</p>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl text-center">
+                                <span class="block text-xs text-slate-400 font-bold uppercase">Total Pendiente de Cobro</span>
+                                <span class="text-xl font-black text-amber-400">${formatCurrency(totalCCPendiente)}</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 h-fit space-y-4">
+                                <h3 class="font-bold text-white text-lg">➕ Registrar en Cuenta Corriente</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre del Cliente</label>
+                                        <input type="text" id="ccClientInput" value="${ccClient}" oninput="ccClient=this.value" placeholder="Ej. Juan Pérez" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Detalle (Trago / Batido)</label>
+                                        <input type="text" id="ccDescInput" value="${ccDesc}" oninput="ccDesc=this.value" placeholder="Ej. Batido Cookies Advanced" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Monto a Deber ($)</label>
+                                        <input type="number" id="ccAmountInput" value="${ccAmount}" oninput="ccAmount=this.value" placeholder="0.00" class="w-full p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-cyan-500"/>
+                                    </div>
+                                    <button onclick="addCuentaCorriente()" class="w-full text-slate-950 font-extrabold py-3 rounded-xl transition-colors text-sm shadow-md hover:opacity-90" style="background-color: ${primaryColor}">
+                                        Guardar en Cuenta Corriente
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2 bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                                <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center">
+                                    <h3 class="font-bold text-white text-lg">Listado de Cuenta Corriente Activa</h3>
+                                    ${cuentaCorrienteHistory.length > 0 ? `<button onclick="cuentaCorrienteHistory=[]; saveDataToStorage(); render();" class="text-xs text-red-400 hover:underline font-bold">Limpiar Todo</button>` : ''}
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+                                                <th class="p-4 font-bold">Fecha</th>
+                                                <th class="p-4 font-bold">Cliente</th>
+                                                <th class="p-4 font-bold">Detalle</th>
+                                                <th class="p-4 font-bold text-right">Monto</th>
+                                                <th class="p-4 font-bold text-center">Estado / Pagado</th>
+                                                <th class="p-4 font-bold text-center">Eliminar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-700/60">
+                                            ${cuentaCorrienteHistory.map(cc => `
+                                                <tr class="hover:bg-slate-700/30 transition-colors ${cc.paid ? 'opacity-50 line-through' : ''}">
+                                                    <td class="p-4 text-xs text-slate-400">${cc.date}</td>
+                                                    <td class="p-4 font-bold text-white text-sm">${cc.client}</td>
+                                                    <td class="p-4 text-sm text-slate-300">${cc.desc}</td>
+                                                    <td class="p-4 text-right text-sm font-bold text-cyan-300">${formatCurrency(cc.amount)}</td>
+                                                    <td class="p-4 text-center">
+                                                        <button onclick="toggleCuentaCorrientePaid('${cc.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${cc.paid ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}">
+                                                            ${cc.paid ? '✅ Pagado' : '⏳ Pendiente'}
+                                                        </button>
+                                                    </td>
+                                                    <td class="p-4 text-center">
+                                                        <button onclick="deleteCuentaCorriente('${cc.id}')" class="p-2 text-red-400 hover:text-red-300 transition-colors">🗑️</button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    ${cuentaCorrienteHistory.length === 0 ? `<div class="p-16 text-center text-slate-400 text-sm">No hay registros en cuenta corriente este mes.</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            else if (activeTab === 'branding') {
+                html += `
+                    <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Personalización de Marca & Logo</h2>
+                            <p class="text-sm text-slate-400 mt-1">Configura el nombre de tu Protein Bar, los colores principales y sube tu logotipo oficial (sin límite de tamaño) para las etiquetas impresas.</p>
+                        </div>
+                        <div class="space-y-4 bg-slate-900 p-6 rounded-2xl border border-slate-700">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre de tu Protein Bar</label>
+                                <input type="text" value="${brandName}" oninput="brandName=this.value" class="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm font-medium outline-none focus:border-cyan-500"/>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Subir Imagen de Logo (Sin límite de tamaño)</label>
+                                <div class="flex items-center gap-4">
+                                    <label class="flex-1 cursor-pointer bg-slate-800 border-2 border-dashed border-slate-700 hover:border-cyan-500 p-4 rounded-xl flex items-center justify-center gap-2 text-slate-300 font-medium text-sm transition-colors">
+                                        📁 <span>Seleccionar archivo de imagen...</span>
+                                        <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="hidden"/>
+                                    </label>
+                                    <img src="${brandLogo}" alt="Logo preview" class="w-14 h-14 rounded-full object-cover border-2 shadow-sm" style="border-color: ${primaryColor}"/>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Color Principal (Cyan)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" value="${primaryColor}" onchange="primaryColor=this.value; saveDataToStorage(); render();" class="w-12 h-12 rounded-xl border border-slate-700 cursor-pointer bg-transparent"/>
+                                        <span class="text-sm font-bold text-cyan-300">${primaryColor}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Color Secundario (Púrpura)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" value="${secondaryColor}" onchange="secondaryColor=this.value; saveDataToStorage(); render();" class="w-12 h-12 rounded-xl border border-slate-700 cursor-pointer bg-transparent"/>
+                                        <span class="text-sm font-bold text-purple-300">${secondaryColor}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
+                                <button onclick="localStorage.removeItem(STORAGE_KEY); location.reload();" class="text-red-400 hover:underline text-xs font-bold">
+                                    ⚠️ Borrar Todos los Datos & Reiniciar
+                                </button>
+                                <button onclick="saveDataToStorage(); showNotificationMsg('🎨 ¡Personalización guardada de forma permanente!')" class="text-slate-950 font-extrabold px-6 py-3 rounded-xl transition-all shadow-md text-sm hover:opacity-90" style="background-color: ${primaryColor}">
+                                    Guardar Cambios de Marca
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = html;
+        }
+
+        window.onload = function () {
+            render();
+        };
+    </script>
+</body>
+</html>
